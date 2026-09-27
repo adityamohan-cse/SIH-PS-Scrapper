@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIH 2026 Problem Statements Tracker | Live Scraper & Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-logo">
+                    <span class="flag-stripe saffron"></span>
+                    <span class="flag-stripe white"></span>
+                    <span class="flag-stripe green"></span>
+                    <span class="brand-icon">⚡</span>
+                </div>
+                <div class="brand-info">
+                    <div class="badge-row">
+                        <span class="tag-sih">SIH 2026</span>
+                        <span class="tag-live" id="liveIndicator"><span class="pulse-dot"></span> STRICT 1-MIN SYNC</span>
+                        <span class="tag-stream" id="streamStatus"><span class="stream-dot"></span> LIVE CONNECTED</span>
+                    </div>
+                    <h1>Smart India Hackathon 2026 <span>Problem Statements Tracker</span></h1>
+                    <p class="subtitle">Scraped strictly every 1 minute from <a href="https://sih.gov.in/sih2026PS" target="_blank" rel="noopener">sih.gov.in/sih2026PS</a> &bull; Real-time push &bull; Live submitted counts</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="refresh-box">
+                    <div class="refresh-meta">
+                        <span class="last-updated" id="lastUpdatedText">Last updated: Fetching...</span>
+                        <span class="countdown-badge" id="countdownBadge">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            <span id="countdownVal">60s</span>
+                        </span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="refresh-progress-bar" id="refreshProgressBar"></div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="btnRefresh" title="Force refresh immediately from SIH portal">
+                            <span class="btn-icon" id="refreshIcon">↻</span>
+                            <span>Refresh Now</span>
+                        </button>
+                        <select id="intervalSelect" class="select-interval" title="Auto-refresh interval">
+                            <option value="60">Auto: 1 min</option>
+                            <option value="120">Auto: 2 min</option>
+                            <option value="300">Auto: 5 min</option>
+                            <option value="0">Auto: Off</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Quick Stats Cards -->
+        <section class="stats-grid">
+            <div class="stat-card" data-tab="all">
+                <div class="stat-icon icon-total">📋</div>
+                <div class="stat-body">
+                    <span class="stat-label">Total Problem Statements</span>
+                    <span class="stat-value" id="statTotal">240</span>
+                    <span class="stat-desc">From 24 pages in SIH portal</span>
+                </div>
+            </div>
+            <div class="stat-card active-card" data-tab="software">
+                <div class="stat-icon icon-soft">💻</div>
+                <div class="stat-body">
+                    <span class="stat-label">Software Ideas</span>
+                    <span class="stat-value" id="statSoftware">182</span>
+                    <span class="stat-desc">Web, AI/ML, Apps & Cloud</span>
+                </div>
+            </div>
+            <div class="stat-card" data-tab="hardware">
+                <div class="stat-icon icon-hard">⚙️</div>
+                <div class="stat-body">
+                    <span class="stat-label">Hardware Ideas</span>
+                    <span class="stat-value" id="statHardware">58</span>
+                    <span class="stat-desc">Robotics, IoT, Electronics</span>
+                </div>
+            </div>
+            <div class="stat-card" id="cardLowComp">
+                <div class="stat-icon icon-golden">🏆</div>
+                <div class="stat-body">
+                    <span class="stat-label">Low Competition (&le; 50)</span>
+                    <span class="stat-value text-green" id="statLowComp">--</span>
+                    <span class="stat-desc">High chance of shortlisting!</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-full">🔒</div>
+                <div class="stat-body">
+                    <span class="stat-label">Capped Ideas (500/500)</span>
+                    <span class="stat-value text-red" id="statCapped">--</span>
+                    <span class="stat-desc">Submission limit reached</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main View Container -->
+        <section class="explorer-card">
+            <!-- Navigation Tabs -->
+            <div class="tabs-bar">
+                <div class="nav-tabs">
+                    <button class="tab-btn active" data-category="software">
+                        <span class="tab-icon">💻</span>
+                        <span class="tab-title">Software</span>
+                        <span class="tab-badge" id="tabCountSoftware">182</span>
+                    </button>
+                    <button class="tab-btn" data-category="hardware">
+                        <span class="tab-icon">⚙️</span>
+                        <span class="tab-title">Hardware</span>
+                        <span class="tab-badge" id="tabCountHardware">58</span>
+                    </button>
+                    <button class="tab-btn" data-category="all">
+                        <span class="tab-icon">🌐</span>
+                        <span class="tab-title">All Categories</span>
+                        <span class="tab-badge" id="tabCountAll">240</span>
+                    </button>
+                </div>
+                
+                <div class="export-actions">
+                    <button class="btn btn-outline" id="btnExportCSV">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        <span>Export CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter and Search Toolbar -->
+            <div class="toolbar">
+                <div class="search-box">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="searchInput" placeholder="Search by PS number (e.g. SIH26001), Title, Ministry, or Theme..." autocomplete="off">
+                    <button id="clearSearch" class="btn-clear hidden">&times;</button>
+                    <button class="btn btn-primary search-action-btn hidden" id="btnSearchOfficial" title="Search this directly in the official SIH portal">
+                        <span>Open in Official SIH ↗</span>
+                    </button>
+                </div>
+
+                <div class="filters-wrap">
+                    <div class="filter-item">
+                        <label for="themeFilter">Theme:</label>
+                        <select id="themeFilter">
+                            <option value="">All Themes</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="competitionFilter">Competition:</label>
+                        <select id="competitionFilter">
+                            <option value="">All Submissions</option>
+                            <option value="golden">🔥 Golden: &le; 50 Submissions</option>
+                            <option value="low">🌱 Low: 51 - 150 Submissions</option>
+                            <option value="moderate">⚡ Moderate: 151 - 350</option>
+                            <option value="high">🔥 High: 351 - 499</option>
+                            <option value="open">🟢 Open (&lt; 500)</option>
+                            <option value="capped">🔒 Capped (500/500)</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="sortOrder">Sort By:</label>
+                        <select id="sortOrder">
+                            <option value="sub_asc">🔥 Submissions (Lowest First - Default)</option>
+                            <option value="sub_desc">📈 Submissions (Highest First)</option>
+                            <option value="ps_asc">🔢 PS Number (Ascending)</option>
+                            <option value="ps_desc">🔢 PS Number (Descending)</option>
+                            <option value="title_asc">🔤 Title (A - Z)</option>
+                            <option value="org_asc">🏛️ Organization (A - Z)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table View Summary Banner -->
+            <div class="table-info-strip">
+                <div class="table-info-left">
+                    <span id="showingCountText">Showing 182 of 182 Problem Statements</span>
+                    <span class="sort-tag-indicator" id="sortTagIndicator">Sorted: Lowest Submissions on top</span>
+                    <span class="live-activity-pill hidden" id="liveActivityPill">
+                        <span class="pulse-dot-green"></span>
+                        <span id="liveActivityText">Count updated live</span>
+                    </span>
+                </div>
+                <div class="table-info-right">
+                    <span class="sync-clock" id="syncClock">Sync Clock: 60s loop active</span>
+                    <span class="tip-badge">💡 Click any Problem Statement Title to read full Background & Expected Solution</span>
+                </div>
+            </div>
+
+            <!-- Table Container (matches SIH design from user image) -->
+            <div class="table-responsive" id="tableContainer">
+                <table class="sih-table" id="psTable">
+                    <thead>
+                        <tr>
+                            <th class="col-sno sortable" data-sort="s_no">
+                                <div class="th-content">
+                                    <span>S.No.</span>
+                                    <span class="sort-arrows"><span class="arrow-up">▲</span><span class="arrow-down">▼</span></span>
+                                </div>
+                            </th>
+                            <th class="col-org sortable" data-sort="organization">
+                                <div class="th-content">
+                                    <span>Organization</span>
+                                    <span class="sort-arrows"><span class="arrow-up">▲</span><span class="arrow-down">▼</span></span>
+                                </div>
+                            </th>
+                            <th class="col-title sortable" data-sort="title">
+                                <div class="th-content">
+                                    <span>Problem Statement Title</span>
+                                    <span class="sort-arrows"><span class="arrow-up">▲</span><span class="arrow-down">▼</span></span>
+                                </div>
+                            </th>
+                            <th class="col-cat sortable" data-sort="category">
+                                <div class="th-content">
+                                    <span>Category</span>
+                                    <span class="sort-arrows"><span class="arrow-up">▲</span><span class="arrow-down">▼</span></span>
+                                </div>
+                            </th>
+                            <th class="col-ps sortable" data-sort="ps_number">
+                                <div class="th-content">
+                                    <span>PS Number</span>
+                                    <span class="sort-arrows"><span class="arrow-up">▲</span><span class="arrow-down">▼</span></span>
+                                </div>
+                            </th>
+                            <th class="col-sub sortable active-sort" data-sort="submitted_count">
+                                <div class="th-content">
+                                    <span>Submitted Idea(s) Count</span>
+                                    <span class="sort-arrows"><span class="arrow-up active">▲</span><span class="arrow-down">▼</span></span>
+                                </div>
+                            </th>
+                            <th class="col-theme sortable" data-sort="theme">
+                                <div class="th-content">
+                                    <span>Theme</span>
+                                    <span class="sort-arrows"><span class="arrow-up">▲</span><span class="arrow-down">▼</span></span>
+                                </div>
+                            </th>
+                            <th class="col-deadline sortable" data-sort="deadline">
+                                <div class="th-content">
+                                    <span>Deadline for Idea Submission</span>
+                                    <span class="sort-arrows"><span class="arrow-up">▲</span><span class="arrow-down">▼</span></span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="8" class="loading-cell">
+                                <div class="spinner"></div>
+                                <p>Loading live problem statements from SIH portal...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Footer -->
+            <div class="table-footer">
+                <div class="footer-legend">
+                    <span class="legend-item"><span class="badge-dot dot-low"></span> &le; 50 Submissions (Low Competition)</span>
+                    <span class="legend-item"><span class="badge-dot dot-mid"></span> 51-200 Submissions</span>
+                    <span class="legend-item"><span class="badge-dot dot-high"></span> 201-499 Submissions</span>
+                    <span class="legend-item"><span class="badge-dot dot-full"></span> 500/500 Capped</span>
+                </div>
+                <div class="footer-count" id="footerCount">All 182 software statements loaded on 1 page</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Problem Statement Detail Modal -->
+    <div class="modal-backdrop hidden" id="modalBackdrop">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-tags">
+                    <span class="badge-ps" id="modalPsNumber">SIH26001</span>
+                    <span class="badge-category" id="modalCategory">Software</span>
+                    <span class="badge-theme" id="modalTheme">Disaster Management</span>
+                </div>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h2 class="modal-title" id="modalTitle">Problem Statement Title</h2>
+
+                <div class="modal-meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">Organization</span>
+                        <span class="meta-value" id="modalOrg">Ministry</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Department</span>
+                        <span class="meta-value" id="modalDept">Department</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Submission Count</span>
+                        <div class="meta-sub-box">
+                            <span class="meta-value font-mono" id="modalCount">0/500</span>
+                            <div class="mini-bar-track">
+                                <div class="mini-bar-fill" id="modalCountBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Deadline</span>
+                        <span class="meta-value" id="modalDeadline">30 September 2026</span>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h3 class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Detailed Description & Background
+                    </h3>
+                    <div class="desc-content" id="modalDescription">Loading description...</div>
+                </div>
+
+                <div class="modal-links" id="modalLinksContainer">
+                    <!-- Links populated dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="btnCopyPS">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    Copy PS Number
+                </button>
+                <a href="https://sih.gov.in/sih2026PS" target="_blank" rel="noopener" class="btn btn-outline" id="btnDirectSIH" title="Opens raw sih.gov.in portal">
+                    Direct sih.gov.in ↗
+                </a>
+                <a href="#" target="_blank" rel="noopener" class="btn btn-primary" id="btnOfficialPortal">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <span id="btnOfficialPortalText">Open Official SIH (Search this PS) ↗</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
